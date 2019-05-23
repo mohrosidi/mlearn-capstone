@@ -8,14 +8,14 @@ library(lubridate)
 hdi_raw <- read_csv("data-raw/DATASET HDI.csv")
 hdi_raw %>% 
   clean_names() %>% 
-  write_csv("data-raw/hdi.csv")
+  write_csv("data-raw/001_hdi.csv")
 
 # Twitter Bot -------------------------------------------------------------
 
 twitter_bot_raw <- read_excel("data-raw/Dataset_bot.xlsx")
 twitter_bot_raw %>% 
   clean_names() %>% 
-  write_csv("data-raw/twitter_bot.csv")
+  write_csv("data-raw/002_twitter-bot.csv")
 
 
 # Lamudi ------------------------------------------------------------------
@@ -26,7 +26,7 @@ lamudi_raw %>%
   mutate(harga_rumah = parse_number(harga_rumah, locale = locale(
     decimal_mark = ",", grouping_mark = "."
   ))) %>% 
-  write_csv("data-raw/lamudi.csv")
+  write_csv("data-raw/003_lamudi.csv")
 
 # Psikologis --------------------------------------------------------------
 
@@ -39,5 +39,5 @@ multitimeline_raw %>%
             psikolog,
             skizofrenia,
             bipolar) %>% 
-  write_csv("data-raw/psikologis.csv")
+  write_csv("data-raw/004_psikologis.csv")
 
