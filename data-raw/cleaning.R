@@ -3,12 +3,22 @@ library(readxl)
 library(janitor)
 library(lubridate)
 
-# HDI ---------------------------------------------------------------------
+# OK-CLEAN ----------------------------------------------------------------
 
-hdi_raw <- read_csv("data-raw/DATASET HDI.csv")
-hdi_raw %>% 
+KeuntunganOKCLEAN_raw <- read_csv("data-raw/KeuntunganOKCLEAN.csv")
+KeuntunganOKCLEAN_raw %>% 
   clean_names() %>% 
-  write_csv("data-raw/001_hdi.csv")
+  write_csv("data-raw/001_ok-clean_keuntungan.csv")
+
+KomplainOKCLEAN_raw <- read_csv("data-raw/KomplainOKCLEAN.csv")
+KomplainOKCLEAN_raw %>% 
+  clean_names() %>% 
+  write_csv("data-raw/001_ok-clean_komplain.csv")
+
+PenggunaOKCLEAN_raw <- read_csv("data-raw/PenggunaOKCLEAN.csv")
+PenggunaOKCLEAN_raw %>% 
+  clean_names() %>% 
+  write_csv("data-raw/001_ok-clean_pengguna.csv")
 
 # Twitter Bot -------------------------------------------------------------
 
@@ -28,16 +38,10 @@ lamudi_raw %>%
   ))) %>% 
   write_csv("data-raw/003_lamudi.csv")
 
-# Psikologis --------------------------------------------------------------
+# HDI ---------------------------------------------------------------------
 
-multitimeline_raw <- read_csv("data-raw/multiTimeline.csv")
-multitimeline_raw %>% 
+hdi_raw <- read_csv("data-raw/DATASET HDI.csv")
+hdi_raw %>% 
   clean_names() %>% 
-  rename_all(~str_remove_all(.x, "_jawa_barat")) %>% 
-  transmute(tanggal = str_remove(minggu, "^[:alpha:]+, "),
-            tanggal = mdy(tanggal),
-            psikolog,
-            skizofrenia,
-            bipolar) %>% 
-  write_csv("data-raw/004_psikologis.csv")
+  write_csv("data-raw/004_hdi.csv")
 
