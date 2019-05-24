@@ -21,7 +21,7 @@ Kota Bandung merupakan salah satu wilayah cakupan layanan OK-CLEAN. Di Kota Kemb
 Manajer Umum memerintahkan Manajer Pemasaran untuk melakukan promosi besar – besaran selama 120 hari penuh. Manajer Pemasaran mulai melakukan perencanaan strategi pemasaran dengan berkolaborasi bersama Manajer Layanan Konsumen dan Manajer Keuangan. Upaya pemasaran direncanakan dengan memberikan potongan harga yang semakin besar di akhir periode promosi. Namun, keputusan tersebut memiliki risiko yaitu Mitra OK-CLEAN sering melakukan pelayanan yang tidak sesuai dengan standar ketika konsumen memesan layanan dengan menggunakan potongan harga yang besar.
 
 Bagian Layanan Konsumen dan Bagian Keuangan selalu erat kaitannya dengan perilaku Mitra OK-CLEAN. Ketika Mitra OK-CLEAN dinilai memiliki kinerja yang buruk atau merugikan konsumen, maka komplain yang diterima oleh Bagian Layanan Konsumen OK-CLEAN akan meningkat dan ganti rugi yang harus diproses oleh Bagian Keuangan juga semakin besar nilainya.
-Strategi promosi selama 120 hari telah dieksekusi sesuai dengan yang direncakan. Pergerakan jumlah konsumen diarsipkan oleh Manajer Pemasaran pada dataset **"001_ok-clean_pengguna.csv"**, pergerakan jumlah komplain diarsipkan oleh Manajer Layanan Konsumen pada dataset **"001_ok-clean_komplain.csv"**, dan pergerakan  keuntungan perusahaan diarsipkan oleh Manajer Keuangan pada dataset **"001_ok-clean_keuntungan.csv"**.
+Strategi promosi selama 120 hari telah dieksekusi sesuai dengan yang direncakan. Pergerakan jumlah konsumen diarsipkan oleh Manajer Pemasaran pada dataset [**"001_ok-clean_pengguna.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_penggunaan.csv), pergerakan jumlah komplain diarsipkan oleh Manajer Layanan Konsumen pada dataset [**"001_ok-clean_komplain.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_komplain.csv), dan pergerakan  keuntungan perusahaan diarsipkan oleh Manajer Keuangan pada dataset [**"001_ok-clean_keuntungan.csv"**]((https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_keuntungan.csv)).
 
 Manajer Umum OK-CLEAN mengadakan pertemuan bersama Manajer Pemasaran, Manajer Layanan Konsumen, dan Manajer Keuangan segera setelah periode promosi berakhir. Pertemuan tersebut membahas tentang proyeksi pergerakan jumlah konsumen, komplain, dan keuntungan di masa yang akan datang berdasarkan data yang diperoleh selama 120 hari promosi.
 
@@ -62,7 +62,7 @@ Indonesia merupakan negara kesatuan dengan bentuk pemerintahan republik. Pemilih
             
 Tahun 2019 merupakan tahun demokrasi bagi seluruh rakyat Indonesia. Pada tahun tersebut, terdapat dua pasangan yang mendaftarkan diri sebagai calon presiden dan wakil presiden Indonesia periode 2019 – 2024. Kedua belah pihak melakukan kampanye melalui berbagai media, baik media offline maupun media online.
 
-Media sosial menjadi wadah yang baik untuk dimanfaatkan sebagai lokasi penyebaran informasi, interaksi, dan upaya – upaya kampanye lainnya. Tak hanya keduabelah pihak, masing – masing pendukung juga terus menyuarakan pendapatnya melalui media ini. Aktivitas penyebaran informasi melalui media sosial ini telah diarsipkan pada dokumen **"002_twitter-bot.csv"**.
+Media sosial menjadi wadah yang baik untuk dimanfaatkan sebagai lokasi penyebaran informasi, interaksi, dan upaya – upaya kampanye lainnya. Tak hanya keduabelah pihak, masing – masing pendukung juga terus menyuarakan pendapatnya melalui media ini. Aktivitas penyebaran informasi melalui media sosial ini telah diarsipkan pada dokumen [**"002_twitter-bot.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/002_twitter-bot.csv).
 
 Diantara sekian banyak pelaku penyebaran informasi, ditemukan bahwasannya tidak semua informasi yang dibagikan bersumber dari manusia. Bot sering ditemukan menjadi pelaku penyebaran informasi secara massal untuk meramaikan interaksi yang terjadi. Hal ini dilakukan untuk memperluas cakupan sebaran informasi dan menimbulkan persepsi bagi pengguna media sosial bahwa calon yang dibicarakan memiliki lebih banyak pendukung.
 
@@ -75,7 +75,7 @@ Saya bertanggungjawab untuk menyediakan informasi yang akurat dan kredibel. Deng
 
 ### Kasus 3: Lamudi
 
-Anda adalah seorang data analyst di perusahaan properti yang berlokasi di Kota Bandung. Pada suatu hari, anda diberikan tugas oleh atasan Anda untuk membuat sebuah model yang dapat menentukan lokasi wilayah dari suatu rumah berdasarkan nilai jual, jumlah kamar, luas tanah (LT), dan luas bangunan (LB). Anda dapat menggunakan dataset **"003_lamudi.csv"**.
+Anda adalah seorang data analyst di perusahaan properti yang berlokasi di Kota Bandung. Pada suatu hari, anda diberikan tugas oleh atasan Anda untuk membuat sebuah model yang dapat menentukan lokasi wilayah dari suatu rumah berdasarkan nilai jual, jumlah kamar, luas tanah (LT), dan luas bangunan (LB). Anda dapat menggunakan dataset [**"003_lamudi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/003_lamudi.csv).
 
 Untuk itu, 
 
@@ -84,7 +84,7 @@ Untuk itu,
 
 ### Kasus 4: HDI
 
-Anda adalah seorang yang bekerja di Kementerian Sosial RI. Salah satu tugas dari Kementerian ini adalah menjamin kesejahteraan sosial bagi masyarakat. Dalam prosesnya, anda diminta untuk menganalisis Kota dan Kabupaten yang ada di seluruh Indonesia berdasarkan nilai HDI dan Revenue nya agar bisa melihat Kota dan Kabupaten mana saja yang memiliki kesamaan karakteristik terkait 2 nilai tersebut. Anda dapat menggunakan dataset **"004_hdi.csv"**.
+Anda adalah seorang yang bekerja di Kementerian Sosial RI. Salah satu tugas dari Kementerian ini adalah menjamin kesejahteraan sosial bagi masyarakat. Dalam prosesnya, anda diminta untuk menganalisis Kota dan Kabupaten yang ada di seluruh Indonesia berdasarkan nilai HDI dan Revenue nya agar bisa melihat Kota dan Kabupaten mana saja yang memiliki kesamaan karakteristik terkait 2 nilai tersebut. Anda dapat menggunakan dataset [**"004_hdi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/004_hdi.csv).
 
 Untuk itu,
 
