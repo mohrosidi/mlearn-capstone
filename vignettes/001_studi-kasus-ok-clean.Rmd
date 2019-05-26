@@ -64,7 +64,6 @@ Terdapat 3 buah library yang diperlukan dalam melakukan analisa terhadap data pe
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(gridExtra)
-library(skimr)
 ```
 
 # Import Data
@@ -77,7 +76,7 @@ Terdapat beberapa data yang perlu dimuat untuk melakukan analisa ini. Data yang 
 
 ```{r}
 # memmuat lokasi data
-daftar_file <- list.files(path="./data-raw", pattern="001", full.names=TRUE)
+daftar_file <- list.files(path="../data-raw", pattern="001", full.names=TRUE)
 
 # print lokasi data
 daftar_file
@@ -105,13 +104,13 @@ Setelah data dimuat tampak terdapat kolom yang masih menjelaskan sesuatu yang sa
 df_clean <- df %>% select(hari_promosi, contains("jumlah"))
 
 # print hasil
-df_clean
+head(df_clean)
 
-# cek
+# struktur data
 glimpse(df_clean)
 
-# ringkasan data disertai pengecekan missing data
-skim(df_clean)
+# ringkasan data
+summary(df_clean)
 ```
 
 Berdasarkan hasil yang diperoleh tidak ditemukan adanya **missing data** pada dataset yang telah dimuat, sehingga analisa dapat dilanjutkan pada tahapan selanjutnya.
