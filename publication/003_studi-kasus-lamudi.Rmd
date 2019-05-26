@@ -1,0 +1,422 @@
+---
+title: 'Capstone Project R Academy: Studi Kasus Lamudi'
+author: "Moh. Rosidi"
+date: "May 26, 2019"
+output: 
+  html_document:
+    df_print: default
+    fig_height: 6
+    fig_width: 9
+    highlight: textmate
+    keep_md: yes
+    theme: yeti
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bussines Problems
+
+Anda adalah seorang data analyst di perusahaan properti yang berlokasi di Kota Bandung. Pada suatu hari, anda diberikan tugas oleh atasan Anda untuk membuat sebuah model yang dapat menentukan lokasi wilayah dari suatu rumah berdasarkan nilai jual, jumlah kamar, luas tanah (LT), dan luas bangunan (LB). Anda dapat menggunakan dataset [**"003_lamudi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/003_lamudi.csv).
+
+Untuk itu, 
+
+1. Model apa yang cocok terhadap kasus diatas? Buatlah model tersebut?
+2. Apa kesimpulan yang bisa diperoleh dari model yang telah dibuat?
+
+# Aktivasi Library
+
+Pada studi kasus ini akan digunakan sejumlah model klasifikasi, atara lain: decision tree, naive bayes, dan k-nn. Model-model tersebut memerlukan sejumlah library. Library yang digunakan dalam analisa studi kasus ini antara lain:
+
+1. `tidyverse`: library yang berisi kumpulan fungsi untuk analisa data.
+2. `skimr`: library untuk membuat ringkasan data.
+3. `rpart`: library untuk membuat model decision tree.
+4. `rattle`: plot model decision tree.
+5. `naivebayes`: library untuk membuat model naivebayes.
+6. `class`: library untuk membuat model k-nn.
+7. `caret`: library untuk membuat model regresi dan klasifikasi, dalam analisa ini akan digunakan untuk membuat table confusion matrix.
+8. `gridExtra`: library untuk menggabungkan beberapa plot dalam satu layar.
+
+
+
+```{r}
+library(tidyverse)
+library(skimr)
+library(rpart)
+library(naivebayes)
+library(class)
+library(rattle)
+library(caret)
+library(gridExtra)
+```
+
+# Import Dataset
+
+Dataset yang digunakan dalam analisa ini adalah [**"003_lamudi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/003_lamudi.csv). Berikut adalah sintaks untuk melakukan upload dataset.
+
+```{r}
+# import dataset
+df <- read_csv("../data-raw/003_lamudi.csv")
+head(df)
+
+# cek struktur data
+glimpse(df)
+
+# buat ringkasan data
+skim(df)
+```
+
+**Keterangan:**
+
++ `alamat_rumah`: lokasi kemacatan rumah berada.
++ `harga_rumah`: harga dari rumah dalam satuan rupiah.
++ `jumlah_kamar`: jumlah kamar yang dimiliki oleh rumah.
++ `jumlah_bangunan`: jumlah bangunan.
++ `luas_lahan`: luas lahan dari rumah berada dalam satu meter persegi.
+
+# Exploratory Data Analysis
+
+Sebelum masuk ke dalam analisa model, kita perlu melakukan analissi data eksploratif (EDA) untuk melihat distribusi dan asosiasi antar variabel pada data.
+
+**scatterplot matrix**
+
+```{r}
+# membuat fungsi untuk menghitung
+# nilai korelasi yang ditempatkan pada panel bawah
+panel.cor <- function(x, y){
+# definisi parameter grafik
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+# menghitung koefisien korelas
+  r <- round(cor(x, y, use="complete.obs", 
+                 method="spearman"), digits=2)
+# menambahkan text berdasarkan koefisien korelasi
+  txt <- paste0("R = ", r)
+# mengatur besar text sesuai besarnya nilai korelasi
+  text(0.5, 0.5, txt)
+}
+# kustomisasi panel atas agar
+# warna titik berdasarkan factor
+my_col <- c("#00AFBB", "#E7B800", "#FC4E07", "grey")
+upper.panel<-function(x, y){
+  points(x,y, col = my_col[as.factor(df$alamat_rumah)])
+}
+
+pairs(df[,-1],
+  lower.panel= panel.cor,
+  upper.panel= upper.panel)
+```
+
+Berdasarkan hasil visualisasi dapat disimpulkan bahwa antar variabel numerik memiliki nilai korelasi yang tinggi dengan nilai koefisien korelasi Spearman > 0,7.
+
+**Density plot dan Bar Plot**
+
+```{r, warning=FALSE}
+theme_set(theme_classic())
+
+barplot<-df %>% group_by(alamat_rumah) %>% 
+  summarise(frekuensi=n()) %>%
+  ggplot(aes(x=reorder(alamat_rumah,frekuensi) , y=frekuensi, fill=as.factor(alamat_rumah)))+
+  geom_bar(stat="identity")+
+  theme(legend.position="none")+
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9",
+"#B47846","#B4464B"))+
+  coord_flip()+
+  labs(x="alamat rumah", y="frekuensi")
+
+harga <- ggplot(df, aes(harga_rumah))+
+  geom_density(aes(fill="#E69F00"))+
+  theme(legend.position="none")+
+  labs(x="harga rumah", y="densitas")
+
+kamar <- ggplot(df, aes(jumlah_kamar))+
+  geom_density(aes(fill="red"))+
+  theme(legend.position="none")+
+  labs(x="jumlah kamar", y="densitas")
+
+bangunan <- ggplot(df, aes(jumlah_bangunan))+
+  geom_density(aes(fill="#56B4E9"))+
+  theme(legend.position="none")+
+  labs(x="jumlah bangunan", y="densitas")
+
+lahan <- ggplot(df, aes(luas_lahan))+
+  geom_density(aes(fill="#B47846"))+
+  theme(legend.position="none")+
+  labs(x="luas lahan", y="densitas")
+
+grid.arrange(harga, kamar, bangunan, lahan, barplot, nrow=3)
+
+
+```
+
+Berdasarkan visualisasi dapat dilihat bahwa distribusi masing-masing variabel cenderung memiliki kemencengan positif (*positively skewed*). Selain itu, dari visualisasi juga terlihat bahwa frekuensi alamat rumah tertinggi pada data terletak pada kecamatan Bandung Utara.
+
+# Data Preprocessing
+
+Pada tahapan ini data dilakukan proses penanganan *missing data* serta pembagian dataset menjadi datase training dan testing. Berdasarkan hasil ringkasan data diketahui bahwa jumlah data hilang pada masing-masing kolom adalah satu, sehingga diputuskan pada analisa ini baris data dengan data yang hilang akan dikecualikan.
+
+```{r}
+# data cleaning
+df_clean <- df %>% 
+  mutate_if(is.character, as.factor) %>%
+  filter(!is.na(harga_rumah)==TRUE)
+
+# ringkasan data
+skim(df_clean)
+
+# data preprocessing
+set.seed(123)
+#Membangi Data Ke Training dan Testing (70:30)
+index_train <- sample(1:nrow(df_clean), 0.7 * nrow(df_clean))
+train <- df_clean[index_train, ]
+test <- df_clean[-index_train, ]
+```
+
+# Model Decision Tree
+
+Model pertama yang akan kita gunakan adalah model decision tree. Model ini melakukan stratifikasi atau segmentasi pada ruang prediktor menjadi sejumlah bagian. Bagian-bagian tersebut selanjutnya akan dibangun kedalam bentuk pohon keputusan yang terdiri atas root, node dan branch.
+
+## Model Building
+
+```{r}
+# membuat model decision tree untuk mengklasifikasikan
+# alamat rumah masing-masing observasi.
+tree <- rpart(alamat_rumah ~., train, method = "class")
+
+# ringkasan model
+summary(tree)
+
+# plot decision tree
+fancyRpartPlot(tree)
+```
+
+Cara membaca model yang terbangun sama dengan nama model itu sendiri yaitu pohon keputusan (melibatkan logika jika...maka..), misal: jika luas lahan < 165 $m^2$, dan harga rumah > Rp. 472.000.000,-, serta luas lahan < 84 $m^2$, maka rumah tersebut berada di Kecamatan Bandung Selatan.
+
+## Model Validation
+
+Validasi model akan dilakukan dengan membangun confusion matriks serta menghitung nilai akurasi dari model yang akan digunakan sebagai pembanding model mana yang akan digunakan untuk menjelaskan studi kasus ini.
+
+```{r}
+#Prediksi Pada Data Testing
+pred_dt <- predict(tree, test, type = "class")
+```
+
+```{r}
+#Validasi Menggunakan Confussion Matrix
+conf <- table(test$alamat_rumah, pred_dt)
+conf
+
+#confusion matrix lengkap
+confusionMatrix(pred_dt, test$alamat_rumah)
+```
+
+Akurasi juga dapat dihitung menggunakan cara berikut:
+
+```{r}
+# menghitung nilai akurasi
+acct <- mean(pred_dt==test$alamat_rumah)
+acct
+```
+
+Berdasarkan hasil yang diperoleh diketahui akurasi model (model tepat dalam melakukan klasifikasi data) sebesar 34,8%.
+
+# Model Naive Bayes
+
+Model Naive Bayes merupakan model yang di dasarkan pada teorema bayes. Model ini merupakan model klasifikasi yang mudah untuk dibuat dan dilakukan interpretasi.
+
+## Model Building
+
+```{r}
+#Membuat model prediksi Naive Bayes
+nb <- naive_bayes(alamat_rumah ~ ., data = train)
+
+#Melihat model yang telah dibuat 
+nb
+
+#Visualisasi Model
+par(mfrow=c(2,2))
+plot(nb)
+```
+
+Pada hasil yang diperoleh untuk jenis data factor `R`, fungsi tersebut menghasilkan luaran probabilitas dari masing-masing factor. Untuk jenis data numerik, fungsi tersebut menghasilkan tabulasi nilai rata-rata dan simpangan baku pada masing-masing factor.
+
+Berdasrkan visualisasi yang dihasilkan dapat dilihat juga distribusi seluruh variabel cenderung memiliki kemencengan yang positif. Densitas tertinggi dari masing-masing variabel dimiliki oleh factor Bandung Barat. Hal ini telah sesuai dengan hasil yang diperoleh dari hasil EDA.
+
+## Model Validation
+
+Validasi model dilakukan melalui pengecekan nilai akurasi, specificity, sensitifity, dan presisi menggunaka  confusion matriks. Sama seperti model sebelumnya, pada analisa ini nilai akurasi akan dijadikan penentu dalam pemilihan model yang cocok.
+
+```{r}
+#Melakukan prediksi dengan data testing
+pred_nb <- predict(nb, as.data.frame(test))
+
+# validation
+#Membuat Confussion Matrix Naive Bayes
+confnb <- table(test$alamat_rumah, pred_nb)
+confnb
+
+#confusion matrix lengkap
+confusionMatrix(pred_nb, test$alamat_rumah)
+```
+
+Nilai akurasi yang diperoleh tidak berbeda jauh dengan model decision tree yaitu sebesar 34,3%. Akurasi juga dapat dihitung menggunakan cara berikut:
+
+```{r}
+# akurasi
+accnb <- mean(pred_nb==test$alamat_rumah)
+accnb
+```
+
+# Model K-NN
+
+Model K-NN merupakan salah satu model klasifikasi yang populer. Algoritma K-NN bergantung pada "kedekatan" antara training sample dengan tetangganya (test sample). Jauh dekatnya jarak antar tetangga biasanya dihitung berdasarkan jarak *Euclidian*. Namun untuk kasus tertentu dapat pula dihitung menggunakan metode lain seperti Manhattan, Minkowski, dsb.
+
+## Data Preprocessing
+
+Normalisasi (membuat range data menjadi 0 sampai 1) atau standarisasi (menseragamkan simpangan baku dan mean) perlu dilakukan dalam pembangunan model ini sebab algoritma yang digunakan adalah algoritma jarak. Dalam model kali ini dataset akan dilakukan standarisasi sebab distribusi dataset yang memilikik kemencengan positif (terdapat outlier). 
+
+Proses lain yang perlu dilakukan adalah merubah seluruh jenis data menjadi numerik. Berikut adalah sintaks untuk melakukannya:
+
+```{r}
+# Data preprocessing
+df_clean <- mutate_if(df_clean, is.factor, as.numeric)
+
+# print
+df_clean
+```
+
+Berdasarkan hasil yang diperoleh, kolom `alamat_rumah` telah dikonversi menjadi numerik dengan perubahan sebagai berikut:
+
+- 1 = Bandung Barat
+- 2 = Bandung Selatan
+- 3 = Bandung Tengah
+- 4 = Bandung Timur
+- 5 = Bandung Utara
+
+Berikut adalah proses standarisasi yang dilakukan:
+
+```{r}
+# standarisasi
+df_norm<-as.data.frame(lapply(df_clean[,-1],scale))
+df_norm2<-bind_cols(df_clean[,1],df_norm)
+
+# ringkasan data
+skim(df_norm2)
+```
+
+Langkah selanjutnya yang perlu dilakukan adalah membagi data menajdi data training dan testing. Berikut adalah sintaks untuk melakukannya:
+
+```{r}
+#Membagi ke Data Train dan Data Testing
+index_train <- sample(1:nrow(df_norm2), 0.7 * nrow(df_norm2))
+df_norm2_train <- df_norm2[index_train, -1]
+df_norm2_test <- df_norm2[-index_train, -1]
+
+#Mengambil Label
+df_norm2_train_target<-df_norm2[index_train ,1]
+df_norm2_test_target<-df_norm2[-index_train ,1]
+```
+
+## Model Building
+
+```{r}
+#Membuat KNN-Model dengan Nilai K=2
+knnmodel <-knn(train=df_norm2_train,test=df_norm2_test,
+               cl=as.matrix(df_norm2_train_target,k=2))
+
+knnmodel
+```
+
+## Model Validation
+
+```{r}
+#Validasi Menggunakan Confussion Matrix
+confknn <- table(df_norm2_test_target$alamat_rumah, knnmodel)
+confknn
+
+#confusion matrix lengkap
+confusionMatrix(knnmodel, 
+                as.factor(df_norm2_test_target$alamat_rumah))
+
+# akurasi
+acck <- mean(knnmodel==df_norm2_test_target$alamat_rumah)
+acck
+```
+
+## Penentuan Nilai K Maksimum
+
+Nilai k akan menentukan akurasi dari model yang kita buat. Nilai k kecil akan membuat model lebih sensitif dibandingkan nilai yang lebih besar. Pada bagian ini penulis akan melakukan perhitungan nilai akurasi untuk berbagai variasi nilai k.
+
+```{r}
+acc <- seq(1:10)
+for(i in 1:10){
+    knnmodel <- knn(train=df_norm2_train,test=df_norm2_test,
+               cl=as.matrix(df_norm2_train_target,k=2))
+    confknn <- table(df_norm2_test_target$alamat_rumah, knnmodel)
+    acc[i] <- mean(knnmodel==df_norm2_test_target$alamat_rumah)
+}
+
+acc
+
+# menentukan k dengan akurasi terbesar
+which.max(acc)
+```
+
+Berdasarkan hasil analisa diperoleh nilai k terbesar adalah k=6. Berikut adalah model yang dibangun dengan k=6:
+
+```{r}
+#Membuat KNN-Model dengan Nilai K=6
+knnmodel <-knn(train=df_norm2_train,test=df_norm2_test,
+               cl=as.matrix(df_norm2_train_target,k=6))
+
+#Validasi Menggunakan Confussion Matrix
+confknn <- table(df_norm2_test_target$alamat_rumah, knnmodel)
+confknn
+
+#confusion matrix lengkap
+confusionMatrix(knnmodel, 
+                as.factor(df_norm2_test_target$alamat_rumah))
+
+# akurasi
+acck <- mean(knnmodel==df_norm2_test_target$alamat_rumah)
+acck
+```
+
+# Penentuan Model Terbaik
+
+Penulis akan menggunakan nilai akurasi masing-masing model untuk menentukan model terbaik yang akan digunakan. Berikut adalah nilai akurasi masing-masing model:
+
+```{r}
+acct # decision tree
+accnb # naive bayes
+acck # k-nn
+```
+
+Berdasarkan hasil yang diperoleh, nilai akurasi tertinggi dimiliki oleh model decision tree, sehingga decision tree akan dipilih sebagai model yang digunakan untuk melakukan klasifikasi lokasi rumah pada studi kasus ini.
+
+Jika kita melihat kembali grafik yang dihasilkan dari decision tree seperti di bawah ini:
+
+```{r}
+fancyRpartPlot(tree)
+```
+
+Berdasarkan visualisasi tersebut dapat diperoleh informasi sebagai berikut:
+
+1. Bandung Utara memiliki hunian dengan luas lahan > 165 $m^2$. 
+2. Bandung Timur memiliki rumah dengan luas lahan $\ge9$ $m^2$ atau luas luas lahan $\ge9$ $m^2$ dan jumlah bangunan $\ge144$ buah atau harga rumah diatas 300 juta rupiah. 
+3. Rumah di Bandung Selatan memiliki luas lahan < 85 $m^2$ dan harga rumah yang lebih kecil dari 470 juta rupiah.
+4. Bandung Barat memiliki rumah dengan harga $\ge300$ juta atau memiliki luas lahan $\ge99$ $m^2$ dan jumlah bangunan < 144 buah.
+
+Model yang dihasilkan tidak cukup baik digunakan untuk menjelaskan rumah yang berlokasi di Bandung Tengah. Hal ini juga terjadi pada dua model lainnya, sehingga masih diperlukan model klasifikasi lain untuk dapat melakukan klasifikasi dengan lebih baik lagi.
+
+

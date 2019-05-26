@@ -1,7 +1,6 @@
 library(tidyverse)
 library(ggpubr)
 library(skimr)
-library(rattle)
 library(rpart)
 library(rpart.plot)
 library(naivebayes)
