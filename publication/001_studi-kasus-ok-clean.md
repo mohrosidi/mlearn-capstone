@@ -73,7 +73,6 @@ Terdapat 3 buah library yang diperlukan dalam melakukan analisa terhadap data pe
 
 1. `tidyverse`: kumpulan library untuk melakukan analisis data seperti: `tidyr` (import data), `ggplot2` (visualisasi data), `dplyr` (transformasi data), dll.
 2. `gridExtra`: menggabungkan beberapa visualisasi data ke dalam satu jendela.
-3. `skimr`: *eksploratory data analysis*.
 
 
 ```r
