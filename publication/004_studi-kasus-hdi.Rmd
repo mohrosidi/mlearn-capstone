@@ -1,0 +1,284 @@
+---
+title: 'Capstone Project R Academy: Studi Kasus HDI'
+author: "Moh. Rosidi"
+date: "May 27, 2019"
+output: 
+  html_document:
+    df_print: default
+    fig_height: 6
+    fig_width: 9
+    highlight: textmate
+    keep_md: yes
+    theme: yeti
+    toc: yes
+    toc_collapsed: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Bussines Problems
+
+Anda adalah seorang yang bekerja di Kementerian Sosial RI. Salah satu tugas dari Kementerian ini adalah menjamin kesejahteraan sosial bagi masyarakat. Dalam prosesnya, anda diminta untuk menganalisis Kota dan Kabupaten yang ada di seluruh Indonesia berdasarkan nilai HDI dan Revenue nya agar bisa melihat Kota dan Kabupaten mana saja yang memiliki kesamaan karakteristik terkait 2 nilai tersebut. Anda dapat menggunakan dataset [**"004_hdi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/004_hdi.csv).
+
+Untuk itu,
+
+1. Model apa yang cocok untuk kasus diatas?
+2. Apakah terdapat suatu Gap yang cukup besar antara Kota dan Kabupaten di Indonesia? Jika ada, sebutkan contoh Kota dan Kabupaten tersebut?
+
+# Aktivasli Library
+
+Sebelum analisa dilakukan, seluruh library yang diperlukan perlu diaktivasi terlebih dahulu. Library yang dibutuhkan antara lain:
+
+1. `tidyverse`: library yang berisi kumpulan tools data science.
+2. `cluster`: library yang digunakan untuk melakukan analisis kluster.
+3. `factoextra`: library yang digunakan untuk mengekstrak dan memvisualisasikan hasil dari analisis multivariat. Library ini akan digunakan untuk visualisasi kluster dan menentukan jumlah kluster optimum.
+4. `skimr`: library yang digunakan untuk membuat ringkasan data.
+5. `gridExtra`: library yang digunakan untuk menggabungkan beberapa grafik menjadi satu.
+
+```{r}
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(skimr)
+library(gridExtra)
+```
+
+# Import Data
+
+Dataset yang digunakan adalah dataset *human development index* kota dan kabupaten di Indonesia yang dapat diunduh pada tautan berikut:([**"004_hdi.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/004_hdi.csv)).
+
+```{r}
+# import data
+df <- read_csv("../data-raw/004_hdi.csv")
+df
+
+# cek struktur data
+glimpse(df)
+
+# buat ringkasan data
+skim(df)
+```
+
+**Keterangan:**
+
++ `kota`: nama kota atau kabupaten.
++ `id`: kode id kota atau kabupaten.
++ `hdi`: indeks pembangunan manusia dalam satuan persen.
++ `revenue`: pendapatan daerah kota atau kabupaten dalam satuan rupiah.
+
+# Data Cleaning
+
+Pada dataset terdapat kolom `id` yang menjelaskan kode id kota atau kabupaten. Kolom tersebut tidak akan digunakan dalam analisa karena sudah terwakili dengan nama kota atau kabupaten.
+
+```{r}
+df_clean <- df %>% select(-id)
+df_clean
+```
+
+# EXploratory Data Analysis
+
+Sebelum dilakukan analisa lebih jauh, kita perlu mengetahui sebaran data dan korelasi antar variabel pada data, sehingga diperlukan adanya analisis data eksploratif (EDA). EDA dilakukan dengan melihat visualisasi data.
+
+```{r}
+# visualisasi data
+theme_set(theme_classic())
+scatter<-ggplot(df_clean, aes(x=hdi,y=revenue))+
+  geom_point(shape=1)
+
+hdi <- ggplot(df_clean, aes(x=hdi, fill="#00AFBB"))+
+  geom_density()+
+  theme(legend.position="none")
+
+revenue <- ggplot(df_clean, aes(x=revenue, fill="#FC4E07"))+
+  geom_density()+
+  theme(legend.position="none")
+
+grid.arrange(revenue, hdi, scatter, nrow=2)
+```
+
+Berdasarkan visualisasi densitas terlihat bahwa terbentuk distribusi yang menceng pada kedua variabel. Variabel `revenue` memiiliki bentuk distribusi yang memiliki kemencengan positif. Hal ini menandakan bahwa sebagian besar kota atau kabupaten di Indonesia masih memiliki pendapatan daerah yang < dari 4 triliun rupiah. Distribusi `hdi` disisi lain emmeiliki kemencengan negatif yang menandakan sebagian besar kota atau kabupaten di Indonesia telah memiliki indeks pembangunan manusia yang lebih besar dari 60%. Hal ini tentu cukup bagus dimana semakin besar nilai indeks ini semakin bagus kualitas sumber daya mnusia yang dimiliki oleh kabupaten atau kota.
+
+Visualisasi diagram pencar antara variabel `hdi` dan `revenue` menunjukkan adanya pengelompokan data menjadi dua kelompok besar. Kelompok yang paling kecil memiliki nilai `hdi`<60% dengan revenue < 2 triliun rupiah. Untuk memastikan adanya kelompok dengan kesamaan karakteristik pada kabupaten atau kota diperlukan analisis kluster.
+
+# Analisis Kluster
+
+Kesamaan karakteristik kabupaten atau kota dalam studi kasus kali ini sanagat cocok dianalisis menggunakan analisis kluster. Salah satu analisis kluster yang populer adalah dengan menggunakan **k-means clustering**. Pada analisis ini nilai *k* atau jumlah kluster ditentukan terlebih dahulu. Jarak observasi terhadap pusat kluster selanjutnya dihitung. Observasi dengan jarak pada pusat kluster terdekatnya selanjutnya akan dijadikan satu kluster. Titik kluster selanjutnya dipindah dan iterasi dilakukan kembali sampai titik kluster tidak bergerak lagi.
+
+## Standarisasi Data
+
+Algoritma klustering didasarkan pada perhitungan jarak antar observasi dan pusat kluster. Normalisasi atau standarisasi perlu dilakukan untuk memastikan efek satu variabel terhadap variabel lain dalam perhitungan jarak tidak signifikan atau seluruh variabel memiliki besar efek yang sama dalam penentuan jarak.
+
+Pada analisis ini dilakukan standarisasi atau menyeragamankan nilai mean dan simpangan baku masing-masing variabel. Standarisai sangat cocok untuk distribusi data yang tidak simetris karena metode ini tidak menghilangkan efek adanya outlier pada data.
+
+```{r}
+#Lakukan Standarisasi dan assign ke variable baru dengan nama "dfnorm".  
+dfnorm <- scale(df_clean[,2:3])
+
+# buat ringkasan data
+skim(as.data.frame(dfnorm))
+
+# cek 10 observasi pertama
+head(dfnorm, 10)
+
+# menambahkan nama baris
+dfnorm2 <- as.data.frame(dfnorm, row.names=df$kota)
+
+# cek 10 observasi pertama
+head(dfnorm2, 10)
+```
+
+## Model Building
+
+Pemilihan Disctance Measures merupakan tahapan penting dalam clustering, karena akan berpengaruh pada hasil/bentuk clustering. Beberapa distance measures yang umum digunakan adalah Euclidean and Manhattan distances.Pada praktek kali ini kita akan menggunakan Euclidean distance sebagai distance measures. 
+
+Dalam R, untuk menghitung dan memvisualisasikan distance matrix, kita dapat menggunakan fungsi `get_dist()` dan `fviz_dist()`. Di visualisasi ini kita akan menggunakan Warna merah untuk menunjukkan adanya perbedaan dan warna biru mennujukkan adanya persamaan/Kemiripan. 
+
+**Keterangan Fungsi:**
+
+- `get_dist`: untuk menghitung distance matrix antar raw. Default: Euclidean Distance
+- `fviz_dist`: untuk memvisualisasi distance matrix.
+
+```{r}
+#Menhitung Ditance Matrix menggunakan fungsi get_distance()
+distance <- get_dist(dfnorm2, method = "euclidean" )
+head(distance)
+
+#Memvisualisasikan Distance Matrix menggunakan fungsi fviz_dist()
+fviz_dist(distance, gradient = list(low = "white", high = "#FC4E07"))
+```
+
+Berdasarkan hasil visualisasi, semakin merah warna tile pada plot tersebut menunjukkan semakin jauh jarak atau gap antar observasi tersebut. Sebagai contoh jarak antara Kota Ambon terhadap Kota Balikpapan sebesar 2.2776473.
+
+Kita dapat menghitung k-means dalam R dengan fungsi `kmeans`. kali ini kita akan mengelompokkan data menjadi dua kelompok (centers = 2). 
+
+Fungsi kmeans juga memiliki opsi nstart yang mencoba beberapa konfigurasi awal dan menginformasikan yang terbaik. Contohnya, menambahkan nilai `nstart = 25` akan menghasilkan 25 konfigurasi awal.
+
+```{r}
+#Membuat Model K-Means Klustering dengan Jumlah K/Centers =2, nstart = 25, dengan nama K2
+k2 <- kmeans(dfnorm2, centers = 2, nstart = 25)
+str(k2)
+```
+
+**Keterangan:**
+
+1. `cluster` -> Sebuah vektor bilangan bulat (dari 1: k) yang menunjukkan cluster yang dialokasikan setiap titik.
+2. `center`-> pusat dari matrix cluster.
+3. `totss` -> total sum of squares.
+4. `withinss` -> Vektor jumlah dalam-cluster kuadrat, satu komponen per cluster.
+5. `tot.withinss` -> Total within-cluster sum of squares, i.e. sum(withinss).
+6. `betweenss` -> The between-cluster sum of squares, i.e. `totss-tot.withinss`.
+7. `size` -> Jumlah Point disetiap Cluster.
+
+Kita juga dapat memprint hasil kluster. 
+
+```{r}
+#Print Hasil Kluster
+k2
+
+table(k2$cluster)
+```
+
+kita juga dapat melihat hasil dengan menggunakan `fviz_cluster`. Fungsi ini memberikan ilustrasi yang bagus tentang cluster.
+
+```{r}
+# visualisasi kluster menggunakan fungsi fviz_cluster()
+fviz_cluster(k2, data = dfnorm2, ggtheme=theme_classic())
+```
+
+Sebagai alternatif, kita dapat menggunakan scatter plots untuk menggambarkan kelompok dibandingkan dengan variabel asli.
+
+```{r}
+#Visualisasi ScatterPlots menggunakan ggplot2
+dfnorm2 %>%
+  as_tibble() %>%
+  mutate(cluster = k2$cluster,
+         kota = row.names(dfnorm2)) %>%
+  ggplot(aes(hdi, revenue, color = factor(cluster), label = kota)) +
+  geom_text()+
+  theme_classic()
+```
+
+Karena jumlah cluster (k) harus ditetapkan sebelum kita memulai algoritma, seringkali menguntungkan untuk menggunakan beberapa nilai k yang berbeda dan memeriksa perbedaan dalam hasil. Kita dapat menjalankan proses yang sama untuk 3, 4, dan 5 cluster.
+
+```{r}
+#Membuat Untuk kluster dengan masing-masing K =3.4.5
+k3 <- kmeans(dfnorm2, centers = 3, nstart = 25)
+k4 <- kmeans(dfnorm2, centers = 4, nstart = 25)
+k5 <- kmeans(dfnorm2, centers = 5, nstart = 25)
+
+# Membuat Komparasi Plot
+p1 <- fviz_cluster(k2, geom = "point", data = dfnorm,ggtheme=theme_classic()) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point", data = dfnorm,ggtheme=theme_classic()) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point", data = dfnorm,ggtheme=theme_classic()) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point", data = dfnorm,ggtheme=theme_classic()) + ggtitle("k = 5")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+## Penentuan Jumlah Kluster Optimal
+
+Untuk membantu analis, berikut ini merupakan dua metode yang populer untuk menentukan nilai Optimal CLuter:
+1. Elbow method
+2. Silhouette method
+
+### Metode ELbow
+
+Ide dari Elbow adalah menemukan *within-cluster dissimilarity* sebagi sebuah fungsi dari jumlah kluster $k$. Untuk mewujudkannya diperlukan visualisasi secara visual , yaitu dengan mengamati plot antara nilai $k$ terhadap nilai *Total within-clusters sum of squares*. 
+
+```{r}
+#Visualisasi Elbow Method menggunakan fungsi fviz_nbclust()
+fviz_nbclust(dfnorm, kmeans, method = "wss")
+```
+
+Berdasarkan grafik tersebut diperoleh nilai kluster optimum sebesar 3.
+
+### Metode Average Silhouette
+
+Singkatnya, pendekatan siluet mengukur kualitas pengelompokan. Artinya, menentukan seberapa baik setiap objek terletak di dalam klusternya. Lebar siluet rata-rata yang tinggi menunjukkan pengelompokan yang baik
+
+Kita bisa menggunakan fungsi Silhouette dalam package cluster untuk menghitung lebar Silhouette rata-rata. code berikut menghitung pendekatan ini untuk 1-15 cluster. Hasilnya menunjukkan bahwa 2 klaster memaksimalkan nilai rata-rata Silhouette dengan 4 klaster yang masuk sebagai jumlah klaster optimal kedua.
+
+```{r}
+#Visualisasi Average Silhoutte menggunakan fugsi fviz_nbclust()
+fviz_nbclust(dfnorm, kmeans, method = "silhouette")
+```
+
+Berdasarkan visualisasi tersebut diperoleh nilai kluster optimum sebesar 3.
+
+# Ekstrasi Hasil Akhir
+
+Dengan sebagian besar pendekatan ini menyarankan 3 sebagai jumlah cluster optimal, kita dapat melakukan analisis akhir dan mengekstraksi hasilnya menggunakan 3 cluster.
+
+```{r}
+# k-means clustering dengan k = 3
+set.seed(123)
+final <- kmeans(dfnorm, 3, nstart = 25)
+print(final)
+
+# Visualisasi Final Cluster
+fviz_cluster(final, geom = "point", data = dfnorm, ggtheme=theme_classic())+ ggtitle("k = 3")
+
+# menghitung nilai mean cluster
+df_clean %>%
+  select(-kota) %>% 
+  mutate(Cluster = final$cluster) %>%
+  group_by(Cluster) %>%
+  summarise_all("mean")
+
+```
+
+Berdasarkan hasil akhir yang terbentuk dapat dilihat bahwa kelompok kluster yang terbentuk sudah sangat jelas terlihat adanya pemisah yang menujukkan adanya perbedaan pada masing-masing kluster. Berdasarkan hasil visualisasi terdapat 3 buah kluster dengan karakteristik sebagai berikut:
+
+1. **Kluster 1**: kabupaten atau kota dengan indeks pembangunan manusia tinggi namun dengan pendapatan daerah yang rendah.
+2. **Kluster 2**: kabupaten atau kota dengan indpeks pembangunan manusia tinggi dan pendapatan daerah yang tinggi.
+3. **Kluster 3**: kabupaten atau kota dengan indeks pembangunan manusia rendah dan pendapatan daerah juga rendah.
+

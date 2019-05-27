@@ -3,6 +3,8 @@ title: 'Capstone Project R Academy: Studi Kasus Ok Clean'
 author: "Moh. Rosidi"
 date: "May 26, 2019"
 output: 
+  pdf_document:
+    toc: yes
   html_document:
     df_print: default
     fig_height: 6
@@ -13,8 +15,6 @@ output:
     toc: yes
     toc_collapsed: yes
     toc_float: yes
-  pdf_document:
-    toc: yes
   word_document:
     toc: yes
 editor_options:
