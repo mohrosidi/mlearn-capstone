@@ -109,62 +109,62 @@ grid.arrange(source,
 # variabel logikal
 media <- ggplot(df_clean, aes(contain_media, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="is tweet contain media?")+
+  theme(legend.position="none")+
+  labs(title="contain media?")+
   coord_flip()
 url <- ggplot(df_clean, aes(contain_url, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="is tweet contain url?")+
+  theme(legend.position="none")+
+  labs(title="contain url?")+
   coord_flip()
 coord <- ggplot(df_clean, aes(have_coordinate, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="tweet have coordinate?")+
+  theme(legend.position="none")+
+  labs(title="have coordinate?")+
   coord_flip()
 url_17 <- ggplot(df_clean, aes(have_url_17, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="have url 17?")+
   coord_flip()
 url_26 <- ggplot(df_clean, aes(have_url_26, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="have url 26?")+
   coord_flip()
 quote <- ggplot(df_clean, aes(is_quote, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="is quote?")+
   coord_flip()
 mention <- ggplot(df_clean, aes(mention, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="is mention?")+
   coord_flip()
 reply <- ggplot(df_clean, aes(reply, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="is reply?")+
   coord_flip()
 banner <- ggplot(df_clean, aes(use_banner, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="is account profile use banner?")+
+  theme(legend.position="none")+
+  labs(title="account profile use banner?")+
   coord_flip()
 loc <- ggplot(df_clean, aes(use_location, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="is account profile use location?")+
+  theme(legend.position="none")+
+  labs(title="account profile use location?")+
   coord_flip()
 verified <- ggplot(df_clean, aes(verified, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
-  labs(title="is verified account?")+
+  theme(legend.position="none")+
+  labs(title="verified account?")+
   coord_flip()
 desc <- ggplot(df_clean, aes(have_description, fill=status))+
   geom_bar(position=position_dodge())+
-  theme(legend.position="top")+
+  theme(legend.position="none")+
   labs(title="account have description?")+
   coord_flip()
 
