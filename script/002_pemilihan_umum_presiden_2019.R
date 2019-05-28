@@ -63,10 +63,5 @@ confusionMatrix(pred_nb, test$status)
 nb_cv <- train(df_clean[,-24],df_clean$status,
             method="nb",
             trControl = trainControl(method = "cv", number = 10))
-nb
-plot(nb)
-
-# -----------------Decision tree---------------------
-#Membuat Model Decison Tree Untuk Mengklasifikasi Apakah Seseorang akan klaim Asuransi atau tidak. 
-tree <- rpart(status ~., train, method = "class")
-prp(tree)
+nb_cv
+plot(nb_cv)
